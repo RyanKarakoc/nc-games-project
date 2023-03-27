@@ -39,3 +39,43 @@ describe("/api/categories", () => {
       });
   });
 });
+
+describe("/api/reviews/:rewiew_id", () => {
+  it("GET: 200: should respond with a object sorted by the id", () => {
+    return request(app)
+      .get("/api/reviews/2")
+      .expect(200)
+      .then((response) => {
+        const reviews = response.body.reviews;
+        reviews.forEach((review) => {
+          expect(review.review_id).toBe(2);
+          expect(review.title).toBe("Jenga");
+          expect(review.designer).toBe("Leslie Scott");
+          expect(review.owner).toBe("philippaclaire9");
+          expect(review.review_img_url).toBe(
+            "https://images.pexels.com/photos/4473494/pexels-photo-4473494.jpeg?w=700&h=700"
+          );
+          expect(review.review_body).toBe("Fiddly fun for all the family");
+          expect(review.category).toBe("dexterity");
+          expect(typeof review.created_at).toBe("string");
+          expect(review.votes).toBe(5);
+        });
+      });
+  });
+  it("400: response with a bad request for an invalid review ID (i.e not a number)", () => {
+    return request(app)
+      .get("/api/reviews/not-a-num")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid ID");
+      });
+  });
+  it("404: response with bad request for an ID that does not exist", () => {
+    return request(app)
+      .get("/api/reviews/777665537773335553")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid parametric end point");
+      });
+  });
+});
