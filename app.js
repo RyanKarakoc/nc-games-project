@@ -1,11 +1,22 @@
 const express = require("express");
 const { getCategories } = require("./controllers/categories-controller");
-const { errorHandle404, errorHandle500s } = require("./controllers/error-controllers");
+const {
+  errorHandlePSQL400,
+  invalidIdError,
+  errorHandle404,
+  errorHandle500s,
+} = require("./controllers/error-controllers");
+const { getReviewById } = require("./controllers/review-controller");
 
 const app = express();
 
-app.get("/api/categories", getCategories);
+app.use(express.json());
 
+app.get("/api/categories", getCategories);
+app.get("/api/reviews/:review_id", getReviewById);
+
+app.use(errorHandlePSQL400);
+app.use(invalidIdError);
 app.all("*", errorHandle404);
 app.use(errorHandle500s);
 
