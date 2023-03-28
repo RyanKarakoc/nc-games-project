@@ -127,6 +127,11 @@ describe("/api/reviews/:review_id/comments", () => {
       .expect(200)
       .then((response) => {
         const comments = response.body.comments;
+        let length = 0;
+        while (length < comments.length) {
+          length++;
+        }
+        expect(comments).toHaveLength(length);
         comments.forEach((comment) => {
           expect(comment).toMatchObject({
             comment_id: expect.any(Number),
@@ -134,7 +139,7 @@ describe("/api/reviews/:review_id/comments", () => {
             created_at: expect.any(String),
             author: expect.any(String),
             body: expect.any(String),
-            review_id: expect.any(Number),
+            review_id: 3,
           });
         });
         createdAtArry = comments.map((comment) => {
@@ -159,6 +164,14 @@ describe("/api/reviews/:review_id/comments", () => {
       .then((response) => {
         const output = "No such review ID";
         expect(response.body.msg).toBe(output);
+      });
+  });
+  it("400: response with a bad request for an invalid review ID (i.e not a number)", () => {
+    return request(app)
+      .get("/api/reviews/not-a-num/comments")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid ID");
       });
   });
 });

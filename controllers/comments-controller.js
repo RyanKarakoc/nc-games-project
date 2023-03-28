@@ -9,8 +9,7 @@ const getCommentsFromReviews = (request, response, next) => {
   }
   Promise.all(commentPromises)
     .then(([result]) => {
-      console.log(result, '<-----------------result');
-      response.status(200).send({comments: result});
+      response.status(200).send({ comments: result });
     })
     .catch(next);
 };
