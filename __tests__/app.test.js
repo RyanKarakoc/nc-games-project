@@ -3,6 +3,7 @@ const app = require("../app");
 const connection = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data/index");
+require("jest-sorted");
 
 beforeEach(() => {
   return seed(data);
@@ -81,18 +82,31 @@ describe("/api/reviews/:rewiew_id", () => {
 });
 
 describe("/api/reviews", () => {
-  it("GET: 200: should resnpond with an array object with the reviews and comment count sorted in descending date order", () => {
+  it("GET: 200: should respond with an array object with the reviews and comment count sorted in descending date order", () => {
     return request(app)
       .get("/api/reviews")
       .expect(200)
       .then((response) => {
         const reviews = response.body.reviews;
-        console.log(reviews);
         expect(reviews).toHaveLength(13);
-        const sortedReviewsByDate = [...reviews].sort((reviewA, reviewB) => {
-          return reviewA.created_at - reviewB.created_at;
+        reviews.forEach((review) => {
+          expect(review).toMatchObject({
+            owner: expect.any(String),
+            title: expect.any(String),
+            review_id: expect.any(Number),
+            category: expect.any(String),
+            review_img_url: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            comment_count: expect.any(Number),
+          });
         });
-        expect(reviews).toEqual(sortedReviewsByDate);
+        const createdAtArray = reviews.map((review) => {
+          return review.created_at;
+        });
+        expect(createdAtArray).toBeSorted({
+          descending: true,
+        });
       });
   });
   it("GET: 404: responds with an error when wrong pathway typed in", () => {
