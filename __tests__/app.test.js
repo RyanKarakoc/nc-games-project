@@ -73,10 +73,10 @@ describe("/api/reviews/:rewiew_id", () => {
   });
   it("404: response with bad request for an ID that does not exist", () => {
     return request(app)
-      .get("/api/reviews/777665537773335553")
+      .get("/api/reviews/553")
       .expect(404)
       .then((response) => {
-        expect(response.body.msg).toBe("Invalid parametric end point");
+        expect(response.body.msg).toBe("No such parametric endpoint");
       });
   });
 });
@@ -115,6 +115,49 @@ describe("/api/reviews", () => {
       .expect(404)
       .then((response) => {
         const output = "Incorrect Path!";
+        expect(response.body.msg).toBe(output);
+      });
+  });
+});
+
+describe("/api/reviews/:review_id/comments", () => {
+  it("GET: 200: should respond with an array of comments for the given review_id", () => {
+    return request(app)
+      .get("/api/reviews/3/comments")
+      .expect(200)
+      .then((response) => {
+        const comments = response.body.comments;
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            review_id: expect.any(Number),
+          });
+        });
+        createdAtArry = comments.map((comment) => {
+          return comment.created_at;
+        });
+        expect(createdAtArry).toBeSorted({ descending: true });
+      });
+  });
+  it("GET 200: should respond with an empty array when there are no comments for a legitimate review_id", () => {
+    return request(app)
+      .get("/api/reviews/1/comments")
+      .expect(200)
+      .then((response) => {
+        const comments = response.body.comments;
+        expect(comments).toEqual([]);
+      });
+  });
+  it("GET: 404: responds with an error msg when no comments for an invalid review_id", () => {
+    return request(app)
+      .get("/api/reviews/1007776633/comments")
+      .expect(404)
+      .then((response) => {
+        const output = "No such review ID";
         expect(response.body.msg).toBe(output);
       });
   });

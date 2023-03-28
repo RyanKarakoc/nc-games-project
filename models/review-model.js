@@ -8,6 +8,13 @@ const fetchReviewById = (review_id) => {
     queryParameters.push(review_id);
   }
   return db.query(selectReviewIdQueryString, queryParameters).then((result) => {
+    console.log(result);
+    if (result.rowCount === 0) {
+      return Promise.reject({
+        status: 404,
+        msg: "No such parametric endpoint",
+      });
+    }
     const review = result.rows;
     return review;
   });
@@ -27,4 +34,16 @@ const fetchReviews = () => {
   });
 };
 
-module.exports = { fetchReviewById, fetchReviews };
+const checkReviewIdExists = (review_id) => {
+  return db
+    .query(`SELECT * FROM reviews WHERE review_id = $1;`, [review_id])
+    .then((result) => {
+      if (result.rowCount === 0) {
+        return Promise.reject({ status: 404, msg: "No such review ID" });
+      }
+      const review = result.rows[0];
+      return review;
+    });
+};
+
+module.exports = { fetchReviewById, fetchReviews, checkReviewIdExists };
