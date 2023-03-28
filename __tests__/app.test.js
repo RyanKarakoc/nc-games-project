@@ -3,6 +3,7 @@ const app = require("../app");
 const connection = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data/index");
+require("jest-sorted");
 
 beforeEach(() => {
   return seed(data);
@@ -76,6 +77,45 @@ describe("/api/reviews/:rewiew_id", () => {
       .expect(404)
       .then((response) => {
         expect(response.body.msg).toBe("Invalid parametric end point");
+      });
+  });
+});
+
+describe("/api/reviews", () => {
+  it("GET: 200: should respond with an array object with the reviews and comment count sorted in descending date order", () => {
+    return request(app)
+      .get("/api/reviews")
+      .expect(200)
+      .then((response) => {
+        const reviews = response.body.reviews;
+        expect(reviews).toHaveLength(13);
+        reviews.forEach((review) => {
+          expect(review).toMatchObject({
+            owner: expect.any(String),
+            title: expect.any(String),
+            review_id: expect.any(Number),
+            category: expect.any(String),
+            review_img_url: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            comment_count: expect.any(Number),
+          });
+        });
+        const createdAtArray = reviews.map((review) => {
+          return review.created_at;
+        });
+        expect(createdAtArray).toBeSorted({
+          descending: true,
+        });
+      });
+  });
+  it("GET: 404: responds with an error when wrong pathway typed in", () => {
+    return request(app)
+      .get("/api/incorrectpath")
+      .expect(404)
+      .then((response) => {
+        const output = "Incorrect Path!";
+        expect(response.body.msg).toBe(output);
       });
   });
 });

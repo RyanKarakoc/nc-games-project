@@ -6,7 +6,10 @@ const {
   errorHandle404,
   errorHandle500s,
 } = require("./controllers/error-controllers");
-const { getReviewById } = require("./controllers/review-controller");
+const {
+  getReviewById,
+  getReviews,
+} = require("./controllers/review-controller");
 
 const app = express();
 
@@ -14,6 +17,7 @@ app.use(express.json());
 
 app.get("/api/categories", getCategories);
 app.get("/api/reviews/:review_id", getReviewById);
+app.get("/api/reviews", getReviews);
 
 app.use(errorHandlePSQL400);
 app.use(invalidIdError);
