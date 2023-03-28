@@ -13,4 +13,18 @@ const fetchReviewById = (review_id) => {
   });
 };
 
-module.exports = { fetchReviewById };
+const fetchReviews = () => {
+  let selectReviewQueryString = `
+  SELECT reviews.*, COUNT(comments.review_id) AS comment_count 
+  FROM reviews 
+  LEFT JOIN comments ON reviews.review_id = comments.review_id 
+  GROUP BY reviews.review_id 
+  ORDER BY created_at DESC;
+  `;
+  return db.query(selectReviewQueryString).then((result) => {
+    const reviews = result.rows;
+    return reviews;
+  });
+};
+
+module.exports = { fetchReviewById, fetchReviews };

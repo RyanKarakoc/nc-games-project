@@ -79,3 +79,29 @@ describe("/api/reviews/:rewiew_id", () => {
       });
   });
 });
+
+describe("/api/reviews", () => {
+  it("GET: 200: should resnpond with an array object with the reviews and comment count sorted in descending date order", () => {
+    return request(app)
+      .get("/api/reviews")
+      .expect(200)
+      .then((response) => {
+        const reviews = response.body.reviews;
+        console.log(reviews);
+        expect(reviews).toHaveLength(13);
+        const sortedReviewsByDate = [...reviews].sort((reviewA, reviewB) => {
+          return reviewA.created_at - reviewB.created_at;
+        });
+        expect(reviews).toEqual(sortedReviewsByDate);
+      });
+  });
+  it("GET: 404: responds with an error when wrong pathway typed in", () => {
+    return request(app)
+      .get("/api/incorrectpath")
+      .expect(404)
+      .then((response) => {
+        const output = "Incorrect Path!";
+        expect(response.body.msg).toBe(output);
+      });
+  });
+});
