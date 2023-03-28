@@ -127,11 +127,7 @@ describe("/api/reviews/:review_id/comments", () => {
       .expect(200)
       .then((response) => {
         const comments = response.body.comments;
-        let length = 0;
-        while (length < comments.length) {
-          length++;
-        }
-        expect(comments).toHaveLength(length);
+        expect(comments).toHaveLength(3);
         comments.forEach((comment) => {
           expect(comment).toMatchObject({
             comment_id: expect.any(Number),
@@ -142,10 +138,10 @@ describe("/api/reviews/:review_id/comments", () => {
             review_id: 3,
           });
         });
-        createdAtArry = comments.map((comment) => {
+        createdAtArray = comments.map((comment) => {
           return comment.created_at;
         });
-        expect(createdAtArry).toBeSorted({ descending: true });
+        expect(createdAtArray).toBeSorted({ descending: true });
       });
   });
   it("GET 200: should respond with an empty array when there are no comments for a legitimate review_id", () => {
