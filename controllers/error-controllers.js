@@ -1,4 +1,10 @@
 const errorHandlePSQL400 = (error, request, response, next) => {
+  if (error.code === "23503") {
+    response.status(400).send({ msg: "No such username" });
+  }
+  if (error.code === "42P02") {
+    response.status(400).send({ msg: "No comment body" });
+  }
   if (error.code === "22P02") {
     response.status(400).send({ msg: "Invalid ID" });
   } else {
@@ -16,11 +22,11 @@ const invalidIdError = (error, request, response, next) => {
 
 const customErrors = (error, request, response, next) => {
   if (error.status && error.msg) {
-    response.status(error.status).send({msg: error.msg})
+    response.status(error.status).send({ msg: error.msg });
   } else {
-    next(error)
+    next(error);
   }
-}
+};
 
 const errorHandle404 = (request, response, next) => {
   response.status(404).send({ msg: "Incorrect Path!" });

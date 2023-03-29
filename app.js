@@ -14,7 +14,10 @@ const {
   getReviews,
 } = require("./controllers/review-controller");
 
-const { getCommentsFromReviews } = require("./controllers/comments-controller");
+const {
+  getCommentsFromReviews,
+  postReviewComment,
+} = require("./controllers/comments-controller");
 
 const app = express();
 
@@ -24,6 +27,8 @@ app.get("/api/categories", getCategories);
 app.get("/api/reviews", getReviews);
 app.get("/api/reviews/:review_id", getReviewById);
 app.get("/api/reviews/:review_id/comments", getCommentsFromReviews);
+
+app.post("/api/reviews/:review_id/comments", postReviewComment);
 
 app.use(errorHandlePSQL400);
 app.use(invalidIdError);

@@ -15,4 +15,24 @@ const fetchCommentsFromReviews = (review_id) => {
   });
 };
 
-module.exports = { fetchCommentsFromReviews };
+const fetchPostReviewComment = (msg, username, review_id) => {
+  let queryParameters = [];
+  let insertCommentQueryString = `
+  INSERT INTO comments 
+    (body, author, review_id)
+  VALUES 
+    ($1, $2, $3)
+  RETURNING *;
+  `;
+  if (msg && username && review_id) {
+    queryParameters.push(msg);
+    queryParameters.push(username);
+    queryParameters.push(review_id);
+  }
+  return db.query(insertCommentQueryString, queryParameters).then((result) => {
+    const comment = result.rows[0];
+    return comment;
+  });
+};
+
+module.exports = { fetchCommentsFromReviews, fetchPostReviewComment };
