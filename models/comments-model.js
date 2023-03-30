@@ -65,7 +65,6 @@ DELETE FROM comments
     queryParameters.push(comment_id);
   }
   return db.query(commentDeleteQueryString, queryParameters).then((result) => {
-    console.log(result.rows);
     const deletedComment = result.rows;
     return deletedComment;
   });

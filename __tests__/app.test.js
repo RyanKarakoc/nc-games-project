@@ -357,7 +357,6 @@ describe("/api/comments/:commet_id", () => {
       .delete("/api/comments/4")
       .expect(204)
       .then((response) => {
-        console.log(response.body)
         const msg = response.body
         const output = {};
         expect(msg).toEqual(output);
@@ -382,5 +381,35 @@ describe("/api/comments/:commet_id", () => {
         const output = "Invalid ID";
         expect(msg).toBe(output);
       });
+  });
+});
+
+describe("/api/users", () => {
+  describe("Get requests", () => {
+    it("GET: 200: should respond with an array of objects of all the users", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then((response) => {
+          const users = response.body.users;
+          expect(users).toHaveLength(4);
+          users.forEach((user) => {
+            expect(user).toMatchObject({
+              username: expect.any(String),
+              name: expect.any(String),
+              avatar_url: expect.any(String),
+            });
+          });
+        });
+    });
+    it("GET: 404: responds with an error when wrong pathway typed in", () => {
+      return request(app)
+        .get("/api/incorrectpath")
+        .expect(404)
+        .then((response) => {
+          const output = "Incorrect Path!";
+          expect(response.body.msg).toBe(output);
+        });
+    });
   });
 });
