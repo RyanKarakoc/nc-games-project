@@ -16,6 +16,10 @@ const fetchCommentsFromReviews = (review_id) => {
 };
 
 const fetchPostReviewComment = (msg, username, review_id) => {
+  if (msg === "") {
+    return Promise.reject({ status: 400, msg: "No body comment" });
+  }
+
   let queryParameters = [];
   let insertCommentQueryString = `
   INSERT INTO comments 
@@ -29,8 +33,9 @@ const fetchPostReviewComment = (msg, username, review_id) => {
     queryParameters.push(username);
     queryParameters.push(review_id);
   }
+
   return db.query(insertCommentQueryString, queryParameters).then((result) => {
-    const comment = result.rows[0];
+    const comment = result.rows[0].body;
     return comment;
   });
 };

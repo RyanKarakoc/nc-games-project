@@ -163,7 +163,7 @@ describe("/api/reviews/:review_id/comments", () => {
           expect(response.body.msg).toBe(output);
         });
     });
-    it("400: response with a bad request for an invalid review ID (i.e not a number)", () => {
+    it("GET: 400: response with a bad request for an invalid review ID (i.e not a number)", () => {
       return request(app)
         .get("/api/reviews/not-a-num/comments")
         .expect(400)
@@ -177,6 +177,23 @@ describe("/api/reviews/:review_id/comments", () => {
       const input = {
         username: "bainesface",
         body: "This is my favourite game so far!",
+      };
+      return request(app)
+        .post("/api/reviews/1/comments")
+        .send(input)
+        .expect(201)
+        .expect("Content-Type", /json/)
+        .then((response) => {
+          const msg = response.body.msg;
+          const output = input.body;
+          expect(msg).toBe(output);
+        });
+    });
+    it("POST: 201: ignores unecessary properties on the object", () => {
+      const input = {
+        username: "bainesface",
+        body: "This is my favourite game so far!",
+        unescessary: "this is unecesarry",
       };
       return request(app)
         .post("/api/reviews/1/comments")
@@ -204,7 +221,7 @@ describe("/api/reviews/:review_id/comments", () => {
           expect(response.body.msg).toBe(output);
         });
     });
-    it("POST: 400: should recieve an error message when no body is typed into the comment", () => {
+    it("POST: 400: should recieve an error message when body is an empty comment", () => {
       const input = {
         username: "bainesface",
         body: "",
@@ -215,18 +232,31 @@ describe("/api/reviews/:review_id/comments", () => {
         .expect(400)
         .expect("Content-Type", /json/)
         .then((response) => {
-          const output = "No comment body";
+          const output = "No body comment";
           expect(response.body.msg).toBe(output);
         });
     });
-  });
-
-  it("", () => {
-    return request(app)
-      .get("/api/reviews/not-a-num/comments")
-      .expect(400)
-      .then((response) => {
-        expect(response.body.msg).toBe("Invalid ID");
-      });
+    it("POST: 400: responds with a bad request for an invalid ID (i.e not a number)", () => {
+      return request(app)
+        .get("/api/reviews/not-a-num/comments")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Invalid ID");
+        });
+    });
+    it("POST: 400: bad request responds with a bad request when object is missing a property", () => {
+      const input = {
+        username: "bainesface",
+      };
+      return request(app)
+        .post("/api/reviews/1/comments")
+        .send(input)
+        .expect(400)
+        .expect("Content-Type", /json/)
+        .then((response) => {
+          const output = "Missing property";
+          expect(response.body.msg).toBe(output);
+        });
+    });
   });
 });

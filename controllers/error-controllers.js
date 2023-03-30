@@ -1,9 +1,10 @@
 const errorHandlePSQL400 = (error, request, response, next) => {
+  console.log(error)
   if (error.code === "23503") {
     response.status(400).send({ msg: "No such username" });
   }
   if (error.code === "42P02") {
-    response.status(400).send({ msg: "No comment body" });
+    response.status(400).send({ msg: "Missing property" });
   }
   if (error.code === "22P02") {
     response.status(400).send({ msg: "Invalid ID" });

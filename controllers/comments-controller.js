@@ -25,7 +25,7 @@ const postReviewComment = (request, response, next) => {
 
   fetchPostReviewComment(msg, username, review_id)
     .then((result) => {
-      response.status(201).send({ msg: result.body });
+      response.status(201).send({ msg: result });
     })
     .catch(next);
 };
