@@ -1,5 +1,4 @@
 const errorHandlePSQL400 = (error, request, response, next) => {
-  console.log(error)
   if (error.code === "23503") {
     response.status(400).send({ msg: "No such username" });
   }
@@ -34,7 +33,6 @@ const errorHandle404 = (request, response, next) => {
 };
 
 const errorHandle500s = (error, request, response, next) => {
-  console.log(error)
   response.send(500).send({ msg: "Oops server error!" });
 };
 
