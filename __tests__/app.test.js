@@ -350,3 +350,37 @@ describe("/api/reviews/:review_id/comments", () => {
     });
   });
 });
+
+describe("/api/comments/:commet_id", () => {
+  it("DELETE: 204: should delete the given comment relevent to the comment_id", () => {
+    return request(app)
+      .delete("/api/comments/4")
+      .expect(204)
+      .then((response) => {
+        console.log(response.body)
+        const msg = response.body
+        const output = {};
+        expect(msg).toEqual(output);
+      });
+  });
+  it("DELETE: 404: should respond with bad request when comment id does not exist", () => {
+    return request(app)
+      .delete("/api/comments/456")
+      .expect(404)
+      .then((response) => {
+        const msg = response.body.msg;
+        const output = "Comment ID does not exist";
+        expect(msg).toBe(output);
+      });
+  });
+  it("DELETE: 400: should respond with bad request for an invalid comment ID (i.e not a number)", () => {
+    return request(app)
+      .delete("/api/comments/not-a-num")
+      .expect(400)
+      .then((response) => {
+        const msg = response.body.msg;
+        const output = "Invalid ID";
+        expect(msg).toBe(output);
+      });
+  });
+});

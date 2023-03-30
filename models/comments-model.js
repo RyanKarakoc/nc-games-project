@@ -40,4 +40,40 @@ const fetchPostReviewComment = (msg, username, review_id) => {
   });
 };
 
-module.exports = { fetchCommentsFromReviews, fetchPostReviewComment };
+const checkCommentExists = (comment_id) => {
+  return db
+    .query(`SELECT * FROM comments WHERE comment_id = $1;`, [comment_id])
+    .then((result) => {
+      if (result.rowCount === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "Comment ID does not exist",
+        });
+      }
+      const review = result.rows[0];
+      return review;
+    });
+};
+
+const fetchDeleteComment = (comment_id) => {
+  let queryParameters = [];
+  let commentDeleteQueryString = `
+DELETE FROM comments
+`;
+  if (comment_id) {
+    commentDeleteQueryString += ` WHERE comment_id = $1`;
+    queryParameters.push(comment_id);
+  }
+  return db.query(commentDeleteQueryString, queryParameters).then((result) => {
+    console.log(result.rows);
+    const deletedComment = result.rows;
+    return deletedComment;
+  });
+};
+
+module.exports = {
+  fetchCommentsFromReviews,
+  fetchPostReviewComment,
+  fetchDeleteComment,
+  checkCommentExists,
+};

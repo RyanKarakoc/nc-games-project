@@ -18,6 +18,7 @@ const {
 const {
   getCommentsFromReviews,
   postReviewComment,
+  deleteComment
 } = require("./controllers/comments-controller");
 
 const app = express();
@@ -32,6 +33,8 @@ app.get("/api/reviews/:review_id/comments", getCommentsFromReviews);
 app.post("/api/reviews/:review_id/comments", postReviewComment);
 
 app.patch("/api/reviews/:review_id", patchReviewsVotes);
+
+app.delete("/api/comments/:comment_id", deleteComment);
 
 app.use(errorHandlePSQL400);
 app.use(invalidIdError);
