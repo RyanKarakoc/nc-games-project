@@ -121,53 +121,150 @@ describe("/api/reviews", () => {
 });
 
 describe("/api/reviews/:review_id/comments", () => {
-  it("GET: 200: should respond with an array of comments for the given review_id", () => {
-    return request(app)
-      .get("/api/reviews/3/comments")
-      .expect(200)
-      .then((response) => {
-        const comments = response.body.comments;
-        expect(comments).toHaveLength(3);
-        comments.forEach((comment) => {
-          expect(comment).toMatchObject({
-            comment_id: expect.any(Number),
-            votes: expect.any(Number),
-            created_at: expect.any(String),
-            author: expect.any(String),
-            body: expect.any(String),
-            review_id: 3,
+  describe(" GET requests", () => {
+    it("GET: 200: should respond with an array of comments for the given review_id", () => {
+      return request(app)
+        .get("/api/reviews/3/comments")
+        .expect(200)
+        .then((response) => {
+          const comments = response.body.comments;
+          expect(comments).toHaveLength(3);
+          comments.forEach((comment) => {
+            expect(comment).toMatchObject({
+              comment_id: expect.any(Number),
+              votes: expect.any(Number),
+              created_at: expect.any(String),
+              author: expect.any(String),
+              body: expect.any(String),
+              review_id: 3,
+            });
           });
+          createdAtArray = comments.map((comment) => {
+            return comment.created_at;
+          });
+          expect(createdAtArray).toBeSorted({ descending: true });
         });
-        createdAtArray = comments.map((comment) => {
-          return comment.created_at;
+    });
+    it("GET 200: should respond with an empty array when there are no comments for a legitimate review_id", () => {
+      return request(app)
+        .get("/api/reviews/1/comments")
+        .expect(200)
+        .then((response) => {
+          const comments = response.body.comments;
+          expect(comments).toEqual([]);
         });
-        expect(createdAtArray).toBeSorted({ descending: true });
-      });
+    });
+    it("GET: 404: responds with an error msg when no comments for an invalid review_id", () => {
+      return request(app)
+        .get("/api/reviews/1007776633/comments")
+        .expect(404)
+        .then((response) => {
+          const output = "No such review ID";
+          expect(response.body.msg).toBe(output);
+        });
+    });
+    it("GET: 400: response with a bad request for an invalid review ID (i.e not a number)", () => {
+      return request(app)
+        .get("/api/reviews/not-a-num/comments")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Invalid ID");
+        });
+    });
   });
-  it("GET 200: should respond with an empty array when there are no comments for a legitimate review_id", () => {
-    return request(app)
-      .get("/api/reviews/1/comments")
-      .expect(200)
-      .then((response) => {
-        const comments = response.body.comments;
-        expect(comments).toEqual([]);
-      });
-  });
-  it("GET: 404: responds with an error msg when no comments for an invalid review_id", () => {
-    return request(app)
-      .get("/api/reviews/1007776633/comments")
+  describe("POST requests", () => {
+    it("POST: 201: should accept a object with a username and a body and respond with the posted comment ", () => {
+      const input = {
+        username: "bainesface",
+        body: "This is my favourite game so far!",
+      };
+      return request(app)
+        .post("/api/reviews/1/comments")
+        .send(input)
+        .expect(201)
+        .expect("Content-Type", /json/)
+        .then((response) => {
+          const msg = response.body.msg;
+          const output = input.body;
+          expect(msg).toBe(output);
+        });
+    });
+    it("POST: 201: ignores unecessary properties on the object", () => {
+      const input = {
+        username: "bainesface",
+        body: "This is my favourite game so far!",
+        unescessary: "this is unecesarry",
+      };
+      return request(app)
+        .post("/api/reviews/1/comments")
+        .send(input)
+        .expect(201)
+        .expect("Content-Type", /json/)
+        .then((response) => {
+          const msg = response.body.msg;
+          const output = input.body;
+          expect(msg).toBe(output);
+        });
+    });
+    it("POST: 400: should respond with an error message when no username exists", () => {
+      const input = {
+        username: "username-doesnt-exist",
+        body: "This is my favourite game so far!",
+      };
+      return request(app)
+        .post("/api/reviews/1/comments")
+        .send(input)
+        .expect(400)
+        .expect("Content-Type", /json/)
+        .then((response) => {
+          const output = "No such username";
+          expect(response.body.msg).toBe(output);
+        });
+    });
+    it("POST: 400: should recieve an error message when body is an empty comment", () => {
+      const input = {
+        username: "bainesface",
+        body: "",
+      };
+      return request(app)
+        .post("/api/reviews/1/comments")
+        .send(input)
+        .expect(400)
+        .expect("Content-Type", /json/)
+        .then((response) => {
+          const output = "No body comment";
+          expect(response.body.msg).toBe(output);
+        });
+    });
+    it("POST: 400: responds with a bad request for an invalid ID (i.e not a number)", () => {
+      return request(app)
+        .get("/api/reviews/not-a-num/comments")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Invalid ID");
+        });
+    });
+    it("POST: 400: bad request responds with a bad request when object is missing a property", () => {
+      const input = {
+        username: "bainesface",
+      };
+      return request(app)
+        .post("/api/reviews/1/comments")
+        .send(input)
+        .expect(400)
+        .expect("Content-Type", /json/)
+        .then((response) => {
+          const output = "Missing property";
+          expect(response.body.msg).toBe(output);
+        });
+    });
+    it('POST: 404: responds with not found when a non existant id is used', () => {
+      return request(app)
+      .get("/api/reviews/553/comments")
       .expect(404)
       .then((response) => {
-        const output = "No such review ID";
-        expect(response.body.msg).toBe(output);
+        expect(response.body.msg).toBe("No such review ID");
       });
-  });
-  it("400: response with a bad request for an invalid review ID (i.e not a number)", () => {
-    return request(app)
-      .get("/api/reviews/not-a-num/comments")
-      .expect(400)
-      .then((response) => {
-        expect(response.body.msg).toBe("Invalid ID");
-      });
+    })
   });
 });

@@ -1,4 +1,8 @@
-const { fetchCommentsFromReviews } = require("../models/comments-model");
+const {
+  fetchCommentsFromReviews,
+  fetchPostReviewComment,
+} = require("../models/comments-model");
+
 const { checkReviewIdExists } = require("../models/review-model");
 
 const getCommentsFromReviews = (request, response, next) => {
@@ -14,4 +18,16 @@ const getCommentsFromReviews = (request, response, next) => {
     .catch(next);
 };
 
-module.exports = { getCommentsFromReviews };
+const postReviewComment = (request, response, next) => {
+  const msg = request.body.body;
+  const username = request.body.username;
+  const review_id = request.params.review_id;
+
+  fetchPostReviewComment(msg, username, review_id)
+    .then((result) => {
+      response.status(201).send({ msg: result });
+    })
+    .catch(next);
+};
+
+module.exports = { getCommentsFromReviews, postReviewComment };
