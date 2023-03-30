@@ -258,5 +258,13 @@ describe("/api/reviews/:review_id/comments", () => {
           expect(response.body.msg).toBe(output);
         });
     });
+    it('POST: 404: responds with not found when a non existant id is used', () => {
+      return request(app)
+      .get("/api/reviews/553/comments")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("No such review ID");
+      });
+    })
   });
 });
