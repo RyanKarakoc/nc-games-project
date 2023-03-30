@@ -45,4 +45,47 @@ const checkReviewIdExists = (review_id) => {
     });
 };
 
-module.exports = { fetchReviewById, fetchReviews, checkReviewIdExists };
+const fetchPatchReviewsVotes = (review_id, requestObject, votes) => {
+  let count = 0;
+  for (const keys in requestObject) {
+    if (requestObject.hasOwnProperty(keys)) {
+      count++;
+    }
+  }
+
+  if (count > 1) {
+    return Promise.reject({ status: 400, msg: "To many properties" });
+  }
+  if (count < 2) {
+    if (!requestObject.hasOwnProperty("inc_votes")) {
+      return Promise.reject({ status: 400, msg: "Wrong key used" });
+    }
+    if (typeof requestObject.inc_votes !== "number") {
+      return Promise.reject({ status: 400, msg: "Vote is not a number" });
+    }
+  }
+
+  let queryParameters = [];
+  let selectReviewIdQueryString = ``;
+  if (review_id && votes) {
+    selectReviewIdQueryString += `
+    UPDATE reviews 
+    SET votes = votes + $2 
+    WHERE review_id = $1 
+    RETURNING *;
+    `;
+    queryParameters.push(review_id);
+    queryParameters.push(votes);
+  }
+  return db.query(selectReviewIdQueryString, queryParameters).then((result) => {
+    const review = result.rows[0];
+    return review;
+  });
+};
+
+module.exports = {
+  fetchReviewById,
+  fetchReviews,
+  checkReviewIdExists,
+  fetchPatchReviewsVotes,
+};

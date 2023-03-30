@@ -12,6 +12,7 @@ const { getCategories } = require("./controllers/categories-controller");
 const {
   getReviewById,
   getReviews,
+  patchReviewsVotes,
 } = require("./controllers/review-controller");
 
 const {
@@ -29,6 +30,8 @@ app.get("/api/reviews/:review_id", getReviewById);
 app.get("/api/reviews/:review_id/comments", getCommentsFromReviews);
 
 app.post("/api/reviews/:review_id/comments", postReviewComment);
+
+app.patch("/api/reviews/:review_id", patchReviewsVotes);
 
 app.use(errorHandlePSQL400);
 app.use(invalidIdError);
