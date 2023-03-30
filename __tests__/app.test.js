@@ -144,6 +144,22 @@ describe("/api/reviews/:rewiew_id", () => {
           expect(response.body.msg).toBe(output);
         });
     });
+    it("400: response with a bad request for an invalid review ID (i.e not a number)", () => {
+      return request(app)
+        .get("/api/reviews/not-a-num")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Invalid ID");
+        });
+    });
+    it("404: response with bad request for an ID that does not exist", () => {
+      return request(app)
+        .get("/api/reviews/553")
+        .expect(404)
+        .then((response) => {
+          expect(response.body.msg).toBe("No such parametric endpoint");
+        });
+    });
   });
 });
 
