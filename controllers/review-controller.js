@@ -14,9 +14,10 @@ const getReviewById = (request, response, next) => {
 };
 
 const getReviews = (request, response, next) => {
-  fetchReviews()
-    .then((reviews) => {
-      response.status(200).send({ reviews: reviews });
+  const { category, sort_by, order } = request.query;
+  fetchReviews(category, sort_by, order)
+    .then((result) => {
+      response.status(200).send({ reviews: result });
     })
     .catch(next);
 };

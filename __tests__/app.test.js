@@ -164,41 +164,258 @@ describe("/api/reviews/:rewiew_id", () => {
 });
 
 describe("/api/reviews", () => {
-  it("GET: 200: should respond with an array object with the reviews and comment count sorted in descending date order", () => {
-    return request(app)
-      .get("/api/reviews")
-      .expect(200)
-      .then((response) => {
-        const reviews = response.body.reviews;
-        expect(reviews).toHaveLength(13);
-        reviews.forEach((review) => {
-          expect(review).toMatchObject({
-            owner: expect.any(String),
-            title: expect.any(String),
-            review_id: expect.any(Number),
-            category: expect.any(String),
-            review_img_url: expect.any(String),
-            created_at: expect.any(String),
-            votes: expect.any(Number),
-            comment_count: expect.any(Number),
+  describe("GET requests", () => {
+    it("GET: 200: should respond with an array object with the reviews and comment count sorted in descending date order", () => {
+      return request(app)
+        .get("/api/reviews")
+        .expect(200)
+        .then((response) => {
+          const reviews = response.body.reviews;
+          expect(reviews).toHaveLength(13);
+          reviews.forEach((review) => {
+            expect(review).toMatchObject({
+              owner: expect.any(String),
+              title: expect.any(String),
+              review_id: expect.any(Number),
+              category: expect.any(String),
+              review_img_url: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            });
+          });
+          const createdAtArray = reviews.map((review) => {
+            return review.created_at;
+          });
+          expect(createdAtArray).toBeSorted({
+            descending: true,
           });
         });
-        const createdAtArray = reviews.map((review) => {
-          return review.created_at;
+    });
+    it("GET: 404: responds with an error when wrong pathway typed in", () => {
+      return request(app)
+        .get("/api/incorrectpath")
+        .expect(404)
+        .then((response) => {
+          const output = "Incorrect Path!";
+          expect(response.body.msg).toBe(output);
         });
-        expect(createdAtArray).toBeSorted({
-          descending: true,
-        });
-      });
+    });
   });
-  it("GET: 404: responds with an error when wrong pathway typed in", () => {
-    return request(app)
-      .get("/api/incorrectpath")
-      .expect(404)
-      .then((response) => {
-        const output = "Incorrect Path!";
-        expect(response.body.msg).toBe(output);
-      });
+  describe("GET Query requests", () => {
+    it("GET 200: responds with a category query for social deduction", () => {
+      return request(app)
+        .get("/api/reviews?category=social+deduction")
+        .expect(200)
+        .then((response) => {
+          const reviews = response.body.reviews;
+          expect(reviews).toHaveLength(11);
+          reviews.forEach((review) => {
+            expect(review).toMatchObject({
+              title: expect.any(String),
+              designer: expect.any(String),
+              owner: expect.any(String),
+              review_img_url: expect.any(String),
+              review_body: expect.any(String),
+              category: "social deduction",
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            });
+          });
+        });
+    });
+    it("GET: 200: GET 200: responds with a category query for dexterity", () => {
+      return request(app)
+        .get("/api/reviews?category=dexterity")
+        .expect(200)
+        .then((response) => {
+          const reviews = response.body.reviews;
+          expect(reviews).toHaveLength(1);
+          reviews.forEach((review) => {
+            expect(review).toMatchObject({
+              title: expect.any(String),
+              designer: expect.any(String),
+              owner: expect.any(String),
+              review_img_url: expect.any(String),
+              review_body: expect.any(String),
+              category: "dexterity",
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            });
+          });
+        });
+    });
+    it("GET: 200: GET 200: responds with a category query for euro game", () => {
+      return request(app)
+        .get("/api/reviews?category=euro+game")
+        .expect(200)
+        .then((response) => {
+          const reviews = response.body.reviews;
+          expect(reviews).toHaveLength(1);
+          reviews.forEach((review) => {
+            expect(review).toMatchObject({
+              title: expect.any(String),
+              designer: expect.any(String),
+              owner: expect.any(String),
+              review_img_url: expect.any(String),
+              review_body: expect.any(String),
+              category: "euro game",
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            });
+          });
+        });
+    });
+    it("GET 404: should respond with bad request category that does not exist is queried", () => {
+      return request(app)
+        .get("/api/reviews?category=this+does+not+exist")
+        .expect(404)
+        .then((response) => {
+          const reviews = response.body.msg;
+          const output = "Category not found";
+          expect(reviews).toBe(output);
+        });
+    });
+    it("GET: 200: should respond with reviews sorted by owner column(defauls to date)", () => {
+      return request(app)
+        .get("/api/reviews?sort_by=owner")
+        .expect(200)
+        .then((response) => {
+          const reviews = response.body.reviews;
+          expect(reviews).toHaveLength(13);
+          reviews.forEach((review) => {
+            expect(review).toMatchObject({
+              title: expect.any(String),
+              designer: expect.any(String),
+              owner: expect.any(String),
+              review_img_url: expect.any(String),
+              review_body: expect.any(String),
+              category: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            });
+            const sortedOwners = reviews.map((review) => {
+              return review.owner;
+            });
+            expect(sortedOwners).toBeSorted({ descending: true });
+          });
+        });
+    });
+    it("GET: 200: should respond with reviews sorted by comment count column (defauls to date)", () => {
+      return request(app)
+        .get("/api/reviews?sort_by=comment_count")
+        .expect(200)
+        .then((response) => {
+          const reviews = response.body.reviews;
+          expect(reviews).toHaveLength(13);
+          reviews.forEach((review) => {
+            expect(review).toMatchObject({
+              title: expect.any(String),
+              designer: expect.any(String),
+              owner: expect.any(String),
+              review_img_url: expect.any(String),
+              review_body: expect.any(String),
+              category: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            });
+            const sortedCommentCount = reviews.map((review) => {
+              return review.comment_count;
+            });
+            expect(sortedCommentCount).toBeSorted({ descending: true });
+          });
+        });
+    });
+    it("GET: 404: should respond with not found when trying to sort by a column name that does not exist is entered", () => {
+      return request(app)
+        .get("/api/reviews?sort_by=this_column_does_not_exist")
+        .expect(404)
+        .then((response) => {
+          const output = "Invalid sort by query";
+          expect(response.body.msg).toBe(output);
+        });
+    });
+    it("GET: 200: should respond with queries allowed to be sorted in ascending order", () => {
+      return request(app)
+        .get("/api/reviews?sort_by=owner&&order=asc")
+        .expect(200)
+        .then((response) => {
+          const reviews = response.body.reviews;
+          expect(reviews).toHaveLength(13);
+          reviews.forEach((review) => {
+            expect(review).toMatchObject({
+              title: expect.any(String),
+              designer: expect.any(String),
+              owner: expect.any(String),
+              review_img_url: expect.any(String),
+              review_body: expect.any(String),
+              category: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            });
+            const sortedOwners = reviews.map((review) => {
+              return review.owner;
+            });
+            expect(sortedOwners).toBeSorted({ ascending: true });
+          });
+        });
+    });
+    it("GET: 200: should respond with queries allowed to be sorted in descending order", () => {
+      return request(app)
+        .get("/api/reviews?sort_by=comment_count&&order=desc")
+        .expect(200)
+        .then((response) => {
+          const reviews = response.body.reviews;
+          expect(reviews).toHaveLength(13);
+          reviews.forEach((review) => {
+            expect(review).toMatchObject({
+              title: expect.any(String),
+              designer: expect.any(String),
+              owner: expect.any(String),
+              review_img_url: expect.any(String),
+              review_body: expect.any(String),
+              category: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            });
+            const sortedCommentCount = reviews.map((review) => {
+              return review.comment_count;
+            });
+            expect(sortedCommentCount).toBeSorted({ descending: true });
+          });
+        });
+    });
+    it("GET: 400: should respond with bad request when trying so order by an invalid order query", () => {
+      return request(app)
+        .get("/api/reviews?sort_by=owner&&order=not_a_valid_order")
+        .expect(400)
+        .then((response) => {
+          const output = "Invalid order by query";
+          expect(response.body.msg).toBe(output);
+        });
+    });
+    it("GET:200: should respond with a category query with aditional sort by querys and order query", () => {
+      return request(app)
+        .get(
+          "/api/reviews?category=social+deduction&&sort_by=owner&&order=desc"
+        )
+        .expect(200)
+        .then((response) => {
+          const reviews = response.body.reviews;
+          // console.log(reviews)
+          const sortedOwner = reviews.map((review) => {
+            return review.owner;
+          });
+          expect(sortedOwner).toBeSorted({ descending: true });
+        });
+    });
   });
 });
 
@@ -357,7 +574,7 @@ describe("/api/comments/:commet_id", () => {
       .delete("/api/comments/4")
       .expect(204)
       .then((response) => {
-        const msg = response.body
+        const msg = response.body;
         const output = {};
         expect(msg).toEqual(output);
       });
