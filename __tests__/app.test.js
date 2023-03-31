@@ -269,13 +269,13 @@ describe("/api/reviews", () => {
           });
         });
     });
-    it("GET 404: should respond with bad request when a invalid category is queried", () => {
+    it("GET 404: should respond with bad request category that does not exist is queried", () => {
       return request(app)
         .get("/api/reviews?category=this+does+not+exist")
         .expect(404)
         .then((response) => {
           const reviews = response.body.msg;
-          const output = "Invalid Category";
+          const output = "Category not found";
           expect(reviews).toBe(output);
         });
     });
@@ -298,10 +298,10 @@ describe("/api/reviews", () => {
               votes: expect.any(Number),
               comment_count: expect.any(Number),
             });
-            // const sortedOwners = reviews.map((review) => {
-            //   return review.owner;
-            // });
-            // expect(sortedOwners).toBeSorted({ descending: true });
+            const sortedOwners = reviews.map((review) => {
+              return review.owner;
+            });
+            expect(sortedOwners).toBeSorted({ descending: true });
           });
         });
     });
@@ -324,10 +324,10 @@ describe("/api/reviews", () => {
               votes: expect.any(Number),
               comment_count: expect.any(Number),
             });
-            // const sortedCommentCount = reviews.map((review) => {
-            //   return review.comment_count;
-            // });
-            // expect(sortedCommentCount).toBeSorted({ descending: true });
+            const sortedCommentCount = reviews.map((review) => {
+              return review.comment_count;
+            });
+            expect(sortedCommentCount).toBeSorted({ descending: true });
           });
         });
     });
@@ -399,6 +399,21 @@ describe("/api/reviews", () => {
         .then((response) => {
           const output = "Invalid order by query";
           expect(response.body.msg).toBe(output);
+        });
+    });
+    it("GET:200: should respond with a category query with aditional sort by querys and order query", () => {
+      return request(app)
+        .get(
+          "/api/reviews?category=social+deduction&&sort_by=owner&&order=desc"
+        )
+        .expect(200)
+        .then((response) => {
+          const reviews = response.body.reviews;
+          // console.log(reviews)
+          const sortedOwner = reviews.map((review) => {
+            return review.owner;
+          });
+          expect(sortedOwner).toBeSorted({ descending: true });
         });
     });
   });

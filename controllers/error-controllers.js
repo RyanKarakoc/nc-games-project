@@ -33,7 +33,7 @@ const errorHandle404 = (request, response, next) => {
 };
 
 const errorHandle500s = (error, request, response, next) => {
-  // console.log(error)
+  console.log(error)
   response.send(500).send({ msg: "Oops server error!" });
 };
 

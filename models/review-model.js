@@ -20,70 +20,86 @@ const fetchReviewById = (review_id) => {
 };
 
 const fetchReviews = (category, sort_by = "created_at", order = "desc") => {
-  const queryParameters = [];
-  let selectReviewQueryString = `
-  SELECT reviews.*, CAST(COUNT(comments.review_id) AS INT) AS comment_count
-  FROM reviews 
-  LEFT JOIN comments ON reviews.review_id = comments.review_id 
-  `;
-  console.log(order);
-  if (order !== "asc" && order !== "desc") {
-    return Promise.reject({ status: 400, msg: "Invalid order by query" });
-  }
-
-  if (category) {
-    return db.query(`SELECT * FROM categories;`).then((result) => {
-      const allCategories = result.rows;
-      const filteredCategories = allCategories.filter((databaseCategories) => {
-        return databaseCategories.slug === category;
-      });
-      if (filteredCategories.length === 0) {
-        selectReviewQueryString += `GROUP BY reviews.review_id`;
-        return Promise.reject({ status: 404, msg: "Invalid Category" });
-      } else {
-        selectReviewQueryString += ` 
-        WHERE category = '${category}'
-        GROUP BY reviews.review_id;
-      `;
-      }
-      return db.query(selectReviewQueryString).then((result) => {
-        const reviews = result.rows;
-        return reviews;
-      });
-    });
-  }
-  if (sort_by) {
-    return db
-      .query(
-        `
-      SELECT reviews.*, CAST(COUNT(comments.review_id) AS INT) AS comment_count
-      FROM reviews 
-      LEFT JOIN comments ON reviews.review_id = comments.review_id 
-      GROUP BY reviews.review_id;
+  const checkForSort_ByColumnsPromise = db
+    .query(
       `
-      )
-      .then((result) => {
-        const reviewSample = result.rows[0];
-        if (!reviewSample.hasOwnProperty(sort_by)) {
-          selectReviewQueryString += `GROUP BY reviews.review_id;`;
-          return Promise.reject({ status: 404, msg: "Invalid sort by query" });
-        } else {
-          selectReviewQueryString += `
-        GROUP BY reviews.review_id
-        ORDER BY ${sort_by} ${order};
-        `;
-        }
-        return db.query(selectReviewQueryString).then((result) => {
-          const reviews = result.rows;
-          return reviews;
-        });
+    SELECT reviews.*, CAST(COUNT(comments.review_id) AS INT) AS comment_count
+    FROM reviews 
+    LEFT JOIN comments ON reviews.review_id = comments.review_id
+    GROUP BY reviews.review_id;
+    `
+    )
+    .then((result) => {
+      const allColumnsArr = [];
+      for (const keys in result.rows[0]) {
+        allColumnsArr.push(keys);
+      }
+      return allColumnsArr;
+    });
+
+  const checkForCategoriesPromise = db
+    .query(
+      `
+      SELECT * FROM categories;
+      `
+    )
+    .then((result) => {
+      const allCategories = result.rows.map((category) => {
+        return category.slug;
       });
-  }
-  console.log(selectReviewQueryString);
-  return db.query(selectReviewQueryString, queryParameters).then((result) => {
-    const reviews = result.rows;
-    return reviews;
-  });
+      return allCategories;
+    });
+
+  return Promise.all([checkForSort_ByColumnsPromise, checkForCategoriesPromise])
+    .then((result) => {
+      let selectReviewQueryString = ``;
+
+      const sort_byQuery = result[0];
+      const categoryQuery = result[1];
+
+      const selectQueryStringCreator = {
+        start: `SELECT reviews.*, CAST(COUNT(comments.review_id) AS INT) AS comment_count
+        FROM reviews 
+        LEFT JOIN comments ON reviews.review_id = comments.review_id`,
+        categoryString: ` `,
+        groupBy: ` GROUP BY reviews.review_id `,
+        sort_byString: ` `,
+        order: ` `,
+      };
+
+      if (categoryQuery.includes(category)) {
+        selectQueryStringCreator.categoryString = ` WHERE category = '${category}' `;
+      }
+      if (sort_byQuery.includes(sort_by)) {
+        selectQueryStringCreator.sort_byString = `ORDER BY ${sort_by} `;
+      }
+      if (order !== "asc" && order !== "desc") {
+        return Promise.reject({ status: 400, msg: "Invalid order by query" });
+      } else {
+        selectQueryStringCreator.order = `${order};`;
+      }
+      for (const keys in selectQueryStringCreator) {
+        selectReviewQueryString += selectQueryStringCreator[keys];
+      }
+      if (category) {
+        if (!categoryQuery.includes(category)) {
+          return Promise.reject({ status: 404, msg: "Category not found" });
+        }
+      }
+      if (sort_by) {
+        if (!sort_byQuery.includes(sort_by)) {
+          return Promise.reject({ status: 404, msg: "Invalid sort by query" });
+        }
+      }
+      return selectReviewQueryString;
+    })
+    .then((result) => {
+      return db.query(result);
+    })
+    .then((result) => {
+      const reviews = result.rows;
+      return reviews;
+    });
 };
 
 const checkReviewIdExists = (review_id) => {
