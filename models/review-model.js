@@ -19,15 +19,68 @@ const fetchReviewById = (review_id) => {
   });
 };
 
-const fetchReviews = () => {
+const fetchReviews = (category, sort_by = "created_at", order = "desc") => {
+  const queryParameters = [];
   let selectReviewQueryString = `
   SELECT reviews.*, CAST(COUNT(comments.review_id) AS INT) AS comment_count
   FROM reviews 
   LEFT JOIN comments ON reviews.review_id = comments.review_id 
-  GROUP BY reviews.review_id 
-  ORDER BY created_at DESC;
   `;
-  return db.query(selectReviewQueryString).then((result) => {
+  console.log(order);
+  if (order !== "asc" && order !== "desc") {
+    return Promise.reject({ status: 400, msg: "Invalid order by query" });
+  }
+
+  if (category) {
+    return db.query(`SELECT * FROM categories;`).then((result) => {
+      const allCategories = result.rows;
+      const filteredCategories = allCategories.filter((databaseCategories) => {
+        return databaseCategories.slug === category;
+      });
+      if (filteredCategories.length === 0) {
+        selectReviewQueryString += `GROUP BY reviews.review_id`;
+        return Promise.reject({ status: 404, msg: "Invalid Category" });
+      } else {
+        selectReviewQueryString += ` 
+        WHERE category = '${category}'
+        GROUP BY reviews.review_id;
+      `;
+      }
+      return db.query(selectReviewQueryString).then((result) => {
+        const reviews = result.rows;
+        return reviews;
+      });
+    });
+  }
+  if (sort_by) {
+    return db
+      .query(
+        `
+      SELECT reviews.*, CAST(COUNT(comments.review_id) AS INT) AS comment_count
+      FROM reviews 
+      LEFT JOIN comments ON reviews.review_id = comments.review_id 
+      GROUP BY reviews.review_id;
+      `
+      )
+      .then((result) => {
+        const reviewSample = result.rows[0];
+        if (!reviewSample.hasOwnProperty(sort_by)) {
+          selectReviewQueryString += `GROUP BY reviews.review_id;`;
+          return Promise.reject({ status: 404, msg: "Invalid sort by query" });
+        } else {
+          selectReviewQueryString += `
+        GROUP BY reviews.review_id
+        ORDER BY ${sort_by} ${order};
+        `;
+        }
+        return db.query(selectReviewQueryString).then((result) => {
+          const reviews = result.rows;
+          return reviews;
+        });
+      });
+  }
+  console.log(selectReviewQueryString);
+  return db.query(selectReviewQueryString, queryParameters).then((result) => {
     const reviews = result.rows;
     return reviews;
   });
