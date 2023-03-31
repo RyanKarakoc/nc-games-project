@@ -64,6 +64,15 @@ describe("/api/reviews/:rewiew_id", () => {
           });
         });
     });
+    it("GET: 200: should respond with the comments count for specified review_id", () => {
+      return request(app)
+        .get("/api/reviews/3")
+        .expect(200)
+        .then((response) => {
+          const commentCount = response.body.reviews[0].comment_count;
+          expect(commentCount).toBe(3);
+        });
+    });
     it("400: response with a bad request for an invalid review ID (i.e not a number)", () => {
       return request(app)
         .get("/api/reviews/not-a-num")
