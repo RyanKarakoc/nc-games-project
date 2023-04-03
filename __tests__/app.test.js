@@ -639,3 +639,24 @@ describe("/api/users", () => {
     });
   });
 });
+describe("/api", () => {
+  describe("GET resuests", () => {
+    it("GET: 200: should respond with a json describing all the endpoints on the api", () => {
+      return request(app)
+        .get("/api")
+        .expect(200)
+        .then((response) => {
+
+        });
+    });
+  });
+  it("GET: 404: responds with an error when wrong pathway typed in", () => {
+    return request(app)
+      .get("/incorrectpath")
+      .expect(404)
+      .then((response) => {
+        const output = "Incorrect Path!";
+        expect(response.body.msg).toBe(output);
+      });
+  });
+});

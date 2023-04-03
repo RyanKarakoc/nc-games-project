@@ -32,6 +32,9 @@ app.get("/api/reviews", getReviews);
 app.get("/api/reviews/:review_id", getReviewById);
 app.get("/api/reviews/:review_id/comments", getCommentsFromReviews);
 app.get("/api/users", getUsers);
+app.get("/api", (request, response, next) => {
+  response.status(200).json(require('./endpoints.json'))
+});
 
 app.post("/api/reviews/:review_id/comments", postReviewComment);
 
