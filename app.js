@@ -22,8 +22,11 @@ const {
 } = require("./controllers/comments-controller");
 
 const { getUsers } = require("./controllers/user-controller");
+const cors = require("cors");
 
 const app = express();
+
+app.use(cors());
 
 app.use(express.json());
 
@@ -33,7 +36,7 @@ app.get("/api/reviews/:review_id", getReviewById);
 app.get("/api/reviews/:review_id/comments", getCommentsFromReviews);
 app.get("/api/users", getUsers);
 app.get("/api", (request, response, next) => {
-  response.status(200).json(require('./endpoints.json'))
+  response.status(200).json(require("./endpoints.json"));
 });
 
 app.post("/api/reviews/:review_id/comments", postReviewComment);
